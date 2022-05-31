@@ -1,13 +1,23 @@
-FROM centos:centos7 as build-stage
+# --------------- Builder stage ---------------
+FROM centos:centos7 as builder
 
-RUN yum update -y && yum install wget which java-1.8.0-openjdk-devel -y && yum clean all
+ENV KAFKA_VERSION=2.4.1.59
 
-RUN wget -O kafka-2.4.1.30.tar.gz https://github.com/linkedin/kafka/archive/refs/tags/2.4.1.30.tar.gz && \
-    tar zxvf kafka-2.4.1.30.tar.gz && \
-    rm kafka-2.4.1.30.tar.gz && \
-    cd kafka-2.4.1.30 && \
-    sed -i 's/version=2.4.2-SNAPSHOT/version=2.4.1.30/g' gradle.properties && \
+RUN yum update -y
+RUN yum install -y wget which java-1.8.0-openjdk-devel
+RUN yum clean all
+
+RUN wget -O kafka-${KAFKA_VERSION}.tar.gz https://github.com/linkedin/kafka/archive/refs/tags/${KAFKA_VERSION}.tar.gz
+RUN tar zxvf kafka-${KAFKA_VERSION}.tar.gz && \
+    rm kafka-${KAFKA_VERSION}.tar.gz
+
+RUN cd kafka-${KAFKA_VERSION} && \
+    sed -i 's/version=2.4.2-SNAPSHOT/version='"${KAFKA_VERSION}"'/g' gradle.properties && \
     ./gradlew clean releaseTarGz
 
-FROM scratch AS export-stage
-COPY --from=build-stage /kafka-2.4.1.30/core/build/distributions/kafka_2.12-2.4.1.30.tgz /
+# --------------- Final stage ---------------
+FROM scratch
+
+ENV KAFKA_VERSION=2.4.1.59
+
+COPY --from=builder /kafka-${KAFKA_VERSION}/core/build/distributions/kafka_2.12-${KAFKA_VERSION}.tgz /

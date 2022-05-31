@@ -7,6 +7,7 @@ RUN yum update -y
 #RUN yum -y install epel-release && yum -y update && yum clean all
 RUN yum groupinstall -y "Development Tools"
 RUN yum -y install wget
+RUN yum clean all
 
 RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/${JEMALLOC_VERSION}/jemalloc-${JEMALLOC_VERSION}.tar.bz2 | tar -xj
 # COPY jemalloc-${JEMALLOC_VERSION}.tar.bz2 .
