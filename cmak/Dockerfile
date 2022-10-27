@@ -1,11 +1,12 @@
 # --------------- Builder stage ---------------
 FROM openjdk:11 as builder
 
-LABEL GITHUB="https://github.com/116davinder"
 LABEL GITHUB_CMAK="https://github.com/yahoo/CMAK"
 
 ENV ZK_HOSTS=localhost:2181
-ENV CMAK_VERSION=3.0.0.5
+ENV CMAK_VERSION=3.0.0.6
+
+COPY repositories /root/.sbt/
 
 RUN cd /tmp && wget https://github.com/yahoo/CMAK/archive/${CMAK_VERSION}.tar.gz && \
     tar -xzvf ${CMAK_VERSION}.tar.gz
@@ -16,9 +17,9 @@ RUN cd /tmp/CMAK-${CMAK_VERSION} && \
 # --------------- Final stage ---------------
 FROM scratch
 
-ENV CMAK_VERSION=3.0.0.5
+ENV CMAK_VERSION=3.0.0.6
 
-COPY --from=builder //tmp/CMAK-${CMAK_VERSION}/target/universal/cmak-${CMAK_VERSION}.zip /
+COPY --from=builder /tmp/CMAK-${CMAK_VERSION}/target/universal/cmak-${CMAK_VERSION}.zip /
 
 # RUN unzip -d / /tmp/CMAK-${CMAK_VERSION}/target/universal/cmak-${CMAK_VERSION}.zip
 
